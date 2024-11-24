@@ -246,6 +246,7 @@ class Navigation extends _$Navigation {
         lastInstruction: firstInstruction,
       );
       _flutterTts.speak("Iniciando navegación");
+      _flutterTts.speak(state.navigationInstruction);
     } else {
       _flutterTts.speak("Iniciando navegación hacia ${state.destinationName}");
     }
@@ -356,7 +357,7 @@ class Navigation extends _$Navigation {
 
       if (response.statusCode == 200) {
         final data = response.data;
-
+        print(data);
         if (data['status'] == 'OK') {
           final List<Map<String, dynamic>> steps = [];
           final route = data['routes'][0]['legs'][0];
@@ -488,8 +489,8 @@ class Navigation extends _$Navigation {
 
     _location.changeSettings(
       accuracy: LocationAccuracy.high,
-      interval: 3000,
-      distanceFilter: 6,
+      interval: 2000,
+      distanceFilter: 4.5,
     );
 
     List<LocationData> locationBuffer = [];
@@ -535,7 +536,7 @@ class Navigation extends _$Navigation {
             medianLng,
           );
 
-          if (distance < 6) return;
+          if (distance < 4.5) return;
         }
 
         final newPosition = geo.Position(
@@ -588,7 +589,7 @@ class Navigation extends _$Navigation {
       );
     }
 
-    return totalDistance > 4;
+    return totalDistance > 3;
   }
 
   double _calculateSmoothedHeading(List<LocationData> buffer) {
@@ -649,7 +650,7 @@ class Navigation extends _$Navigation {
     double newLng,
   ) {
     // Aumentar el umbral de distancia mínima
-    const double minDistance = 4.0;
+    const double minDistance = 3.0;
 
     final distance = geo.Geolocator.distanceBetween(
       currentPosition.latitude,
@@ -745,11 +746,6 @@ class Navigation extends _$Navigation {
       state.destinationPosition.latitude,
       state.destinationPosition.longitude,
     );
-
-    if (distanceToDestination < 10) {
-      stopNavigation();
-      return;
-    }
   }
 
   String _getRelativeDirection(double deviceHeading, double targetBearing) {
@@ -811,16 +807,19 @@ class Navigation extends _$Navigation {
     final streetName = _getCleanStreetName(step['instruction']);
     final maneuver = step['maneuver'] ?? '';
     toggleFollowUser();
+    print('Instrucción inmediata: $maneuver');
+    print('Dirección relativa: $streetName');
 
     switch (maneuver) {
       case 'turn-right':
       case 'turn-slight-right':
         ref.read(bluetoothProvider.notifier).sendMessage('d');
+        print("se mando la letra d");
         return "Gira a la derecha ahora hacia $streetName";
       case 'turn-left':
       case 'turn-slight-left':
         ref.read(bluetoothProvider.notifier).sendMessage('i');
-
+        print("se mando la letra i");
         return "Gira a la izquierda ahora hacia $streetName";
       case 'roundabout-right':
       case 'roundabout-left':
@@ -905,7 +904,7 @@ class Navigation extends _$Navigation {
       userPosition,
       routePoints,
       true,
-      tolerance: 50, // Aumentado a 50 metros
+      tolerance: 30,
     );
 
     // Encontrar el punto más cercano en la ruta
@@ -975,7 +974,7 @@ class Navigation extends _$Navigation {
     if (headingDifference > 180) headingDifference = 360 - headingDifference;
 
     // Consideramos que nos movemos hacia la ruta si la diferencia es menor a 60 grados
-    return headingDifference < 60;
+    return headingDifference < 45;
   }
 
   void _handleOffRoute(List<mtk.LatLng> routePoints, mtk.LatLng userPosition) {
@@ -1083,7 +1082,7 @@ class Navigation extends _$Navigation {
   }
 
   void _checkDestinationProximity() {
-    if (state.currentPosition == null) return;
+    if (state.currentPosition == null || state.currentRoute == null) return;
 
     double distanceToDestination = geo.Geolocator.distanceBetween(
       state.currentPosition!.latitude,
@@ -1092,10 +1091,22 @@ class Navigation extends _$Navigation {
       state.destinationPosition.longitude,
     );
 
-    if (distanceToDestination < 10) {
-      _flutterTts.speak(
-          "Has llegado a tu destino seleccionado, gracias por usar wayassist");
+    // Verifica si la última posición de la ruta es la misma que la posición actual
+    LatLng lastRoutePosition = state.currentRoute!.points.last;
+    double distanceToEndOfRoute = geo.Geolocator.distanceBetween(
+      state.currentPosition!.latitude,
+      state.currentPosition!.longitude,
+      lastRoutePosition.latitude,
+      lastRoutePosition.longitude,
+    );
+
+    if (distanceToDestination < 20 || distanceToEndOfRoute < 1) {
+      print("se mando la letra x");
+      ref.read(bluetoothProvider.notifier).sendMessage('x');
+      _flutterTts
+          .speak("Has llegado a tu destino, gracias por usar Wey assist");
       Future.delayed(const Duration(seconds: 6), () {
+        stopNavigation();
         ref.read(appRouterProvider).go('/home');
         dispose();
       });

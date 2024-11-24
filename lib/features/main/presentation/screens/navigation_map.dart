@@ -1,3 +1,4 @@
+import 'package:wayassist/config/router/app_router.dart';
 import 'package:wayassist/features/main/presentation/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,6 +55,7 @@ class NavigationScreen extends ConsumerWidget {
 
     final navigationState = ref.watch(navigationProvider(
         originPosition, destinationPosition, destinationName));
+    final colors = Theme.of(context).colorScheme;
 
     if (navigationState.isLoading) {
       return _LoadingView();
@@ -278,56 +280,7 @@ class _NavigationOverlay extends StatelessWidget {
       top: MediaQuery.of(context).padding.top + 120,
       left: 0,
       right: 0,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _NavigationMetric(
-                  icon: Icons.directions_walk,
-                  value: '${state.distanceToDestination.toStringAsFixed(1)} m',
-                  label: 'Distancia',
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Semantics(
-              excludeSemantics: true,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  state.navigationInstruction,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: Container(),
     );
   }
 }

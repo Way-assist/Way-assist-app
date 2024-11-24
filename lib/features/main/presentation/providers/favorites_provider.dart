@@ -125,12 +125,9 @@ class Favorites extends _$Favorites {
         state = state.copyWith(isLoading: false);
         return;
       }
-      state = state.copyWith(
-          favorites: [...state.favorites, ...favorites], isLoading: false);
+      state = state.copyWith(favorites: favorites, isLoading: false);
     } catch (e) {
       state = state.copyWith(messageError: e.toString());
-    } finally {
-      state = state.copyWith(isLoading: false);
     }
   }
 }

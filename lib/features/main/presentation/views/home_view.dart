@@ -65,7 +65,7 @@ class _HomeViewState extends ConsumerState<HomeView>
     }
 
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
     );
     ref.read(favoritesProvider.notifier).getFavorites();
     ref.watch(searchMapProvider.notifier).onLongPress(

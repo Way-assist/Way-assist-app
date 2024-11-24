@@ -67,7 +67,7 @@ class _CustomSliverAppBar extends StatelessWidget {
                           offset: const Offset(0, 5))
                     ]),
                 child: SizedBox.expand(
-                  child: Image.asset('assets/images/logo2.jpg'),
+                  child: Image.asset('assets/images/logo2.png'),
                 ),
               ),
             ),
